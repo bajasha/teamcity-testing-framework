@@ -1,0 +1,74 @@
+### Generated test data
+@projectId = {{$random.alphabetic(10)}}
+@buildTypeId = {{$random.alphabetic(10)}}
+
+### 0. Generate auth token
+GET http://192.168.31.98:8111/authenticationTest.html?csrf
+Accept: application/json
+
+> {%
+    client.global.set("token", response.body);
+%}
+### 1. Create project
+
+POST http://192.168.31.98:8111/app/rest/projects
+Content-Type: application/json
+Accept: application/json
+X-TC-CSRF-Token:c9d81d67-37a3-474b-94f7-3badd2a683fd
+
+{
+  "parentProject": {
+    "locator": "_Root"
+  },
+  "name": "name",
+  "id": "id",
+  "copyAllAssociatedSettings": true
+}
+
+### 2. Create build configuration
+POST http://192.168.31.98:8111/app/rest/buildTypes
+Content-Type: application/json
+Accept: application/json
+X-TC-CSRF-Token:c9d81d67-37a3-474b-94f7-3badd2a683fd
+
+{
+  "id": "id",
+  "name": "name",
+  "project": {
+    "id": "id"
+  },
+  "steps": {
+    "step": [
+      {
+        "name": "name",
+        "type": "simpleRunner",
+        "properties": {
+          "property": [
+            {
+              "name": "script.content",
+              "value": "echo 'Hello World!'"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
+
+### 3. Run build configuration
+POST http://192.168.31.98:8111/app/rest/buildQueue
+Content-Type: application/json
+Accept: application/json
+X-TC-CSRF-Token:9953c6a7-8819-4a69-80b2-5aa52b4457e0
+
+{
+  "buildType": {
+    "id": "id"
+  }
+}
+
+### 4. Check build status
+GET http://admin:admin@localhost:8111/app/rest/buildTypes/id:{{buildTypeId}}/builds/running:true
+Content-Type: application/json
+Accept: application/json
+X-TC-CSRF-Token: {{token}}
