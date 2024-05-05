@@ -87,7 +87,7 @@ public class RolesTest extends BaseApiTest {
     }
 
     @Test
-    public void projectDeveloperShouldNotHaveRightsToCreateBuildConfigToHisProject() {
+    public void projectDeveloperShouldNotHaveRightsToCreateBuildConfig() {
         var testData = testDataStorage.addTestData();
 
         checkedWithSuperUser.getProjectRequest()
@@ -102,5 +102,114 @@ public class RolesTest extends BaseApiTest {
         new UncheckedBuildConfig(Specifications.getSpec().authSpec(testData.getUser()))
                 .create(testData.getBuildType())
                 .then().assertThat().statusCode(HttpStatus.SC_FORBIDDEN);
+    }
+
+    @Test
+    public void projectDeveloperShouldNotHaveRightsToCreateProject() {
+        var testData = testDataStorage.addTestData();
+
+        testData.getUser().setRoles(TestDataGenerator.generateRoles(Role.PROJECT_DEVELOPER, "g"));
+
+        checkedWithSuperUser.getUserRequest()
+                .create(testData.getUser());
+
+        new UncheckedProject(Specifications.getSpec()
+                .authSpec(testData.getUser()))
+                .create(testData.getProject())
+                .then().assertThat().statusCode(HttpStatus.SC_FORBIDDEN);
+    }
+
+    @Test
+    public void unauthorizedUserShouldNotHaveRightToCreateBuildConfig() {
+        var testData = testDataStorage.addTestData();
+
+        checkedWithSuperUser.getUserRequest()
+                .create(testData.getUser());
+
+        new UncheckedBuildConfig(Specifications.getSpec().unauthSpec())
+                .create(testData.getBuildType())
+                .then().assertThat().statusCode(HttpStatus.SC_UNAUTHORIZED);
+    }
+
+    @Test
+    public void projectViewerShouldNotHaveRightsToCreateBuildConfig() {
+        var testData = testDataStorage.addTestData();
+
+        checkedWithSuperUser.getProjectRequest()
+                .create(testData.getProject());
+
+        testData.getUser().setRoles(
+                TestDataGenerator.generateRoles(Role.PROJECT_VIEWER, "p:" + testData.getProject().getId()));
+
+        checkedWithSuperUser.getUserRequest()
+                .create(testData.getUser());
+
+        new UncheckedBuildConfig(Specifications.getSpec().authSpec(testData.getUser()))
+                .create(testData.getBuildType())
+                .then().assertThat().statusCode(HttpStatus.SC_FORBIDDEN);
+    }
+
+    @Test
+    public void projectViewerShouldNotHaveRightsToCreateProject() {
+        var testData = testDataStorage.addTestData();
+
+        testData.getUser().setRoles(TestDataGenerator.generateRoles(Role.PROJECT_VIEWER, "g"));
+
+        checkedWithSuperUser.getUserRequest()
+                .create(testData.getUser());
+
+        new UncheckedProject(Specifications.getSpec()
+                .authSpec(testData.getUser()))
+                .create(testData.getProject())
+                .then().assertThat().statusCode(HttpStatus.SC_FORBIDDEN);
+    }
+
+    @Test
+    public void agentManagerShouldNotHaveRightsToCreateBuildConfig() {
+        var testData = testDataStorage.addTestData();
+
+        checkedWithSuperUser.getProjectRequest()
+                .create(testData.getProject());
+
+        testData.getUser().setRoles(
+                TestDataGenerator.generateRoles(Role.AGENT_MANAGER, "p:" + testData.getProject().getId()));
+
+        checkedWithSuperUser.getUserRequest()
+                .create(testData.getUser());
+
+        new UncheckedBuildConfig(Specifications.getSpec().authSpec(testData.getUser()))
+                .create(testData.getBuildType())
+                .then().assertThat().statusCode(HttpStatus.SC_FORBIDDEN);
+    }
+
+    @Test
+    public void agentManagerShouldNotHaveRightsToCreateProject() {
+        var testData = testDataStorage.addTestData();
+
+        testData.getUser().setRoles(TestDataGenerator.generateRoles(Role.AGENT_MANAGER, "g"));
+
+        checkedWithSuperUser.getUserRequest()
+                .create(testData.getUser());
+
+        new UncheckedProject(Specifications.getSpec()
+                .authSpec(testData.getUser()))
+                .create(testData.getProject())
+                .then().assertThat().statusCode(HttpStatus.SC_FORBIDDEN);
+    }
+
+    @Test
+    public void systemAdminShouldHaveRightsToCreateBuildConfigToHisProject() {
+        var testData = testDataStorage.addTestData();
+
+        checkedWithSuperUser.getProjectRequest()
+                .create(testData.getProject());
+
+        checkedWithSuperUser.getUserRequest()
+                .create(testData.getUser());
+
+        var buildConfig = new CheckedBuildConfig(Specifications.getSpec().authSpec(testData.getUser()))
+                .create(testData.getBuildType());
+
+        softy.assertThat(buildConfig.getId()).isEqualTo(testData.getBuildType().getId());
     }
 }

@@ -1,6 +1,12 @@
 package com.example.teamcity.api.generators;
 
-import com.example.teamcity.api.models.*;
+
+import com.example.teamcity.api.models.NewProjectDescription;
+import com.example.teamcity.api.models.Role;
+import com.example.teamcity.api.models.Roles;
+import com.example.teamcity.api.models.User;
+import com.example.teamcity.api.models.Project;
+import com.example.teamcity.api.models.BuildType;
 
 import java.util.Arrays;
 
@@ -45,5 +51,10 @@ public class TestDataGenerator {
                 .role(Arrays.asList(Role.builder().roleId(role.getText())
                         .scope(scope)
                         .build())).build();
+    }
+
+    public static Project generateParentProject(String project) {
+        return Project.builder().locator(project)
+                        .build();
     }
 }

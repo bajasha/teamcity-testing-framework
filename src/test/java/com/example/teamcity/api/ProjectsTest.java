@@ -1,6 +1,8 @@
 package com.example.teamcity.api;
 
 import com.example.teamcity.api.generators.RandomData;
+import com.example.teamcity.api.generators.TestDataGenerator;
+import com.example.teamcity.api.models.Project;
 import com.example.teamcity.api.requests.checked.CheckedProject;
 import com.example.teamcity.api.requests.checked.CheckedUser;
 import com.example.teamcity.api.requests.unchecked.UncheckedProject;
@@ -67,7 +69,7 @@ public class ProjectsTest extends BaseApiTest {
     }
 
     @Test
-    public void unableToCreateProjectWithoutNameTest() {
+    public void userUnableToCreateProjectWithoutNameTest() {
         var testData = testDataStorage.addTestData();
 
         new CheckedUser(Specifications.getSpec().superUserSpec()).create(testData.getUser());
@@ -80,7 +82,7 @@ public class ProjectsTest extends BaseApiTest {
     }
 
     @Test
-    public void unableToCreateProjectWithoutIdTest() {
+    public void userUnableToCreateProjectWithoutIdTest() {
         var testData = testDataStorage.addTestData();
 
         new CheckedUser(Specifications.getSpec().superUserSpec()).create(testData.getUser());
@@ -90,5 +92,31 @@ public class ProjectsTest extends BaseApiTest {
         new UncheckedProject(Specifications.getSpec().authSpec(testData.getUser())).create(testData.getProject())
                 .then().assertThat().statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR)
                 .body(Matchers.containsString("Project ID must not be empty"));
+    }
+
+    @Test
+    public void userUnableToCreateProjectWithNonexistentParentProject() {
+        var testData = testDataStorage.addTestData();
+
+        new CheckedUser(Specifications.getSpec().superUserSpec()).create(testData.getUser());
+
+        testData.getProject().setParentProject(TestDataGenerator.generateParentProject(RandomData.getString()));
+
+        new UncheckedProject(Specifications.getSpec().authSpec(testData.getUser())).create(testData.getProject())
+                .then().assertThat().statusCode(HttpStatus.SC_NOT_FOUND)
+                .body(Matchers.containsString("No project found by name or internal/external id"));
+    }
+
+    @Test
+    public void userUnableToCreateProjectWithoutParentProject() {
+        var testData = testDataStorage.addTestData();
+
+        new CheckedUser(Specifications.getSpec().superUserSpec()).create(testData.getUser());
+
+        testData.getProject().setParentProject(TestDataGenerator.generateParentProject(RandomData.getString()));
+
+        new UncheckedProject(Specifications.getSpec().authSpec(testData.getUser())).create(testData.getProject())
+                .then().assertThat().statusCode(HttpStatus.SC_NOT_FOUND)
+                .body(Matchers.containsString("No project found by name or internal/external id"));
     }
 }
