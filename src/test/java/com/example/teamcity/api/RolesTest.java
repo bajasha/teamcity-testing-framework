@@ -4,7 +4,6 @@ import com.example.teamcity.api.enums.Role;
 import com.example.teamcity.api.generators.TestDataGenerator;
 import com.example.teamcity.api.requests.checked.CheckedBuildConfig;
 import com.example.teamcity.api.requests.checked.CheckedProject;
-import com.example.teamcity.api.requests.checked.CheckedUser;
 import com.example.teamcity.api.requests.unchecked.UncheckedBuildConfig;
 import com.example.teamcity.api.requests.unchecked.UncheckedProject;
 import com.example.teamcity.api.spec.Specifications;
@@ -84,6 +83,24 @@ public class RolesTest extends BaseApiTest {
 
         new UncheckedBuildConfig(Specifications.getSpec().authSpec(secondTestData.getUser()))
                 .create(firstTestData.getBuildType())
+                .then().assertThat().statusCode(HttpStatus.SC_FORBIDDEN);
+    }
+
+    @Test
+    public void projectDeveloperShouldNotHaveRightsToCreateBuildConfigToHisProject() {
+        var testData = testDataStorage.addTestData();
+
+        checkedWithSuperUser.getProjectRequest()
+                .create(testData.getProject());
+
+        testData.getUser().setRoles(
+                TestDataGenerator.generateRoles(Role.PROJECT_DEVELOPER, "p:" + testData.getProject().getId()));
+
+        checkedWithSuperUser.getUserRequest()
+                .create(testData.getUser());
+
+        new UncheckedBuildConfig(Specifications.getSpec().authSpec(testData.getUser()))
+                .create(testData.getBuildType())
                 .then().assertThat().statusCode(HttpStatus.SC_FORBIDDEN);
     }
 }

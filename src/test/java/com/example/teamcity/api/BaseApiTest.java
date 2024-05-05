@@ -16,7 +16,6 @@ public class BaseApiTest extends BaseTest {
 
     public UncheckedRequests uncheckedWithSuperUser = new UncheckedRequests(Specifications.getSpec().superUserSpec());
 
-
     @BeforeMethod
     public void setupTest() {
         testDataStorage = TestDataStorage.getStorage();
