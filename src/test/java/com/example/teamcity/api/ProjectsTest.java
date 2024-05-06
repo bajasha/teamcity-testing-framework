@@ -15,7 +15,7 @@ import static java.lang.String.format;
 public class ProjectsTest extends BaseApiTest {
 
     @Test
-    public void userUnableToCreateTwoProjectsWithSameId() {
+    public void userUnableToCreateTwoProjectsWithSameIdTest() {
         var testData = testDataStorage.addTestData();
 
         checkedWithSuperUser.getUserRequest()
@@ -35,7 +35,7 @@ public class ProjectsTest extends BaseApiTest {
     }
 
     @Test
-    public void userUnableToCreateTwoProjectsWithSameName() {
+    public void userUnableToCreateTwoProjectsWithSameNameTest() {
         var testData = testDataStorage.addTestData();
 
         checkedWithSuperUser.getUserRequest()
@@ -94,7 +94,7 @@ public class ProjectsTest extends BaseApiTest {
     }
 
     @Test
-    public void userUnableToCreateProjectWithNonexistentParentProject() {
+    public void userUnableToCreateProjectWithNonexistentParentProjectTest() {
         var testData = testDataStorage.addTestData();
 
         new CheckedUser(Specifications.getSpec().superUserSpec()).create(testData.getUser());
@@ -107,7 +107,7 @@ public class ProjectsTest extends BaseApiTest {
     }
 
     @Test
-    public void userUnableToCreateProjectWithoutParentProject() {
+    public void userUnableToCreateProjectWithoutParentProjectTest() {
         var testData = testDataStorage.addTestData();
 
         new CheckedUser(Specifications.getSpec().superUserSpec()).create(testData.getUser());
