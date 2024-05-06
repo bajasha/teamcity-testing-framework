@@ -53,8 +53,8 @@ public class TestDataGenerator {
                         .build())).build();
     }
 
-    public static Project generateParentProject(String project) {
-        return Project.builder().locator(project)
+    public static Project generateParentProject(String projectId) {
+        return Project.builder().locator(projectId)
                         .build();
     }
 }

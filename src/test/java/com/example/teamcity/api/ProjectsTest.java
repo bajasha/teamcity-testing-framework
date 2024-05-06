@@ -2,7 +2,6 @@ package com.example.teamcity.api;
 
 import com.example.teamcity.api.generators.RandomData;
 import com.example.teamcity.api.generators.TestDataGenerator;
-import com.example.teamcity.api.models.Project;
 import com.example.teamcity.api.requests.checked.CheckedProject;
 import com.example.teamcity.api.requests.checked.CheckedUser;
 import com.example.teamcity.api.requests.unchecked.UncheckedProject;
@@ -74,7 +73,7 @@ public class ProjectsTest extends BaseApiTest {
 
         new CheckedUser(Specifications.getSpec().superUserSpec()).create(testData.getUser());
 
-        testData.getProject().setName("");
+        testData.getProject().setName(null);
 
         new UncheckedProject(Specifications.getSpec().authSpec(testData.getUser())).create(testData.getProject())
                 .then().assertThat().statusCode(HttpStatus.SC_BAD_REQUEST)
@@ -87,7 +86,7 @@ public class ProjectsTest extends BaseApiTest {
 
         new CheckedUser(Specifications.getSpec().superUserSpec()).create(testData.getUser());
 
-        testData.getProject().setId("");
+        testData.getProject().setId(null);
 
         new UncheckedProject(Specifications.getSpec().authSpec(testData.getUser())).create(testData.getProject())
                 .then().assertThat().statusCode(HttpStatus.SC_INTERNAL_SERVER_ERROR)
@@ -113,10 +112,40 @@ public class ProjectsTest extends BaseApiTest {
 
         new CheckedUser(Specifications.getSpec().superUserSpec()).create(testData.getUser());
 
-        testData.getProject().setParentProject(TestDataGenerator.generateParentProject(RandomData.getString()));
+        testData.getProject().setParentProject(TestDataGenerator.generateParentProject(null));
 
         new UncheckedProject(Specifications.getSpec().authSpec(testData.getUser())).create(testData.getProject())
-                .then().assertThat().statusCode(HttpStatus.SC_NOT_FOUND)
-                .body(Matchers.containsString("No project found by name or internal/external id"));
+                .then().assertThat().statusCode(HttpStatus.SC_BAD_REQUEST)
+                .body(Matchers.containsString("No project specified. Either 'id', 'internalId' or 'locator' attribute should be present."));
+    }
+
+    @Test
+    public void userCanUseCreatedProjectAsParentProjectTest() {
+        var firstTestData = testDataStorage.addTestData();
+        var secondTestData = testDataStorage.addTestData();
+
+        new UncheckedProject(Specifications.getSpec().superUserSpec()).create(firstTestData.getProject());
+
+        secondTestData.getProject().setParentProject(TestDataGenerator.generateParentProject(firstTestData.getProject().getId()));
+
+        var childProject = new CheckedProject(Specifications.getSpec().superUserSpec()).create(secondTestData.getProject());
+
+        softy.assertThat(childProject.getParentProjectId()).isEqualTo(firstTestData.getProject().getId());
+    }
+
+    @Test
+    public void userCanCreateProjectsWithSameNameUnderDifferentParentProjectsTest() {
+        var firstTestData = testDataStorage.addTestData();
+        var secondTestData = testDataStorage.addTestData();
+
+        new UncheckedProject(Specifications.getSpec().superUserSpec()).create(firstTestData.getProject());
+
+        secondTestData.getProject().setParentProject(TestDataGenerator.generateParentProject(firstTestData.getProject().getId()));
+
+        secondTestData.getProject().setName(firstTestData.getProject().getName());
+
+        var secondProject = new CheckedProject(Specifications.getSpec().superUserSpec()).create(secondTestData.getProject());
+
+        softy.assertThat(secondProject.getName()).isEqualTo(firstTestData.getProject().getName());
     }
 }
